@@ -20,16 +20,24 @@ public class GetDataSourceMetaData extends BIF {
 		declaredArguments = new Argument[] {
 			new Argument( false, Argument.STRING, Key.datasource )
 		};
-	};	
+	}
 	public Object _invoke(IBoxContext context, ArgumentsScope arguments ) {
     	DatasourceService datasourceService = context.getRuntime().getDataSourceService();
 		String datasourceName = arguments.getAsString( Key.datasource );
+		
 		// Get all datasource names from datasource service, then iterate through them to retrieve metadata
 		Array metadataArray = new Array();
 		String[] datasourceNames = datasourceService.getNames();
+
 		// Check if one specific datasource is requested and return accordingly
 		if (datasourceName != null && !datasourceName.isEmpty()) {
 			DataSource datasource = datasourceService.get( Key.of( datasourceName ));
+			// Check if datasource doesn't exist, otherwise later functions will fail
+			if ( datasource == null ) {
+				throw new BoxRuntimeException(
+					"Datasource [" + datasourceName + "] does not exist"
+				);
+			}
 			DatasourceConfig configuration = datasource.getConfiguration();
 
 			Struct metadata = Struct.of(
@@ -38,7 +46,7 @@ public class GetDataSourceMetaData extends BIF {
 				"applicationName", configuration.getApplicationName(),
 				"poolStats", datasource.getPoolStats()
 			);
-			metadataArray.append(metadata);
+			return metadata;
 		} else {
 		// Iterate through all datasource names and append metadata to a struct to the metadata array
 			for (String datasourceName : datasourceNames) {
@@ -51,9 +59,9 @@ public class GetDataSourceMetaData extends BIF {
 				"applicationName", configuration.getApplicationName(),
 				"poolStats", datasource.getPoolStats()
 			);
-			metadataArray.append(metadata);
+			metadataArray.append( metadata );
 			}
 		}
 		return metadataArray;
-	};
-};
+	}
+}
