@@ -10,6 +10,7 @@ import ortus.boxlang.runtime.config.segments.DatasourceConfig;
 import ortus.boxlang.runtime.types.Argument;
 import ortus.boxlang.runtime.types.Array;
 import ortus.boxlang.runtime.types.Struct;
+import ortus.boxlang.runtime.types.IStruct;
 import ortus.boxlang.runtime.types.exceptions.BoxRuntimeException;
 
 @BoxBIF( description = "Returns datasource configuration and pool metadata")
@@ -40,7 +41,7 @@ public class GetDataSourceMetaData extends BIF {
 			}
 			DatasourceConfig configuration = datasource.getConfiguration();
 
-			Struct metadata = Struct.of(
+			IStruct metadata = Struct.of(
 				"datasourceName", datasourceName,
 				"configuration", configuration.toConfigStruct(),
 				"applicationName", configuration.getApplicationName(),
@@ -49,12 +50,12 @@ public class GetDataSourceMetaData extends BIF {
 			return metadata;
 		} else {
 		// Iterate through all datasource names and append metadata to a struct to the metadata array
-			for (String datasourceName : datasourceNames) {
-			DataSource datasource = datasourceService.get( Key.of( datasourceName ));
+			for (String dsName : datasourceNames) {
+			DataSource datasource = datasourceService.get( Key.of( dsName ));
 			DatasourceConfig configuration = datasource.getConfiguration();
 
-			Struct metadata = Struct.of(
-				"datasourceName", datasourceName,
+			IStruct metadata = Struct.of(
+				"datasourceName", dsName,
 				"configuration", configuration.toConfigStruct(),
 				"applicationName", configuration.getApplicationName(),
 				"poolStats", datasource.getPoolStats()
